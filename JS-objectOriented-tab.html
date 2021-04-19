@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title></title>
+    <style>
+       *{margin: 0;padding: 0; list-style: none;}
+			 main { width: 800px;height: 600px; margin: 20px auto;}
+			 h4{width: 800px;height: 40px;line-height: 40px;  text-align: center;}
+			 .tabsbox{ width: 800px; height: 400px;border: 1px solid #eeeeee;}
+			 .fisrstnav {width: 800px;height: 40px;line-height: 40px;border-bottom: 1px solid #eeee; position: relative;}
+			 .fisrstnav ul li{float: left;width:90px;height: 40px;border-right: 1px solid #eeeeee;text-align: center;position: relative;}
+			 .tabadd {position: absolute;right: 10px;top:10px; width: 20px;height: 20px; border: 1px solid #eeeeee; text-align: center;line-height: 20px;}
+			 .liactive{ border-bottom: 1px solid #ffffff;}
+			 .icon-guanbi{position: absolute; right: 0;top:0; width: 15px;height: 15px;background: #000000;color: #FFFFFF;font-size: 12px;line-height: 15px; text-align: center;}
+			 section{display: none;}
+			 .conactive{display: block;}
+			 input{ width: 60px;}
+    </style>
+</head>
+<body>   
+<main>
+	<h4> js 面向对象 动态添加标签页</h4>
+	<div class="tabsbox" id="tab">
+		<!--tab标签 -->
+		<nav class="fisrstnav">
+			<ul>
+				<li class="liactive"><span>测试1</span><span class="iconfont icon-guanbi">X</span></li>
+				<li><span>测试2</span><span class="iconfont icon-guanbi">X</span></li>
+				<li><span>测试3</span><span class="iconfont icon-guanbi">X</span></li>
+			</ul>
+			<div class="tabadd">
+				<span> + </span>
+			</div>
+		</nav>
+		<!--tab内容 -->
+		<div class="tabsson">
+			<section class="conactive">测试1</section>
+			<section>测试2</section>
+			<section>测试3</section>
+		</div>
+	</div>
+	<script type="text/javascript">
+		let that
+		class Tab {
+			constructor(id) {
+			   //获取元素
+				that=this;
+				this.main = document.querySelector(id)
+				
+				this.add = this.main.querySelector('.tabadd')
+				//li 的父元素
+				this.ul = this.main.querySelector('.fisrstnav ul:first-child');
+				//section的父元素
+				this.fsection = this.main.querySelector('.tabsson')
+				this.init();
+			}
+			init() {
+				this.updateNode();
+				//init 初始化操作让相关元素绑定事件
+				this.add.onclick = this.addTab;
+				for (let i = 0; i< this.lis.length; i++){
+					this.lis[i].index = i ;
+					this.lis[i].onclick = this.toggleTab;
+					this.remove[i].onclick = this.removeTab;
+					this.spans[i].ondblclick = this.editTab;
+					this.sections[i].ondblclick = this.editTab;
+				}
+			}
+			//因为动态添加元素，需要重新获取对应的元素
+			updateNode() {
+				this.lis = this.main.querySelectorAll('li');
+				this.sections = this.main.querySelectorAll('section');
+				this.remove = this.main.querySelectorAll('.icon-guanbi');
+				this.spans = this.main.querySelectorAll('.fisrstnav li span:first-child');
+			}
+			//1.切换功能
+			toggleTab() {
+				//console.log(this.index)
+				that.clearClass();
+				this.className = 'liactive';
+				that.sections[this.index].className = 'conactive'
+			}
+			//清除所有li 和section的类
+			clearClass() {
+				for(let i =0 ;i<this.lis.length;i++){
+					this.lis[i].className = '';
+					this.sections[i].className = '';
+				}
+			}
+			//2.添加功能
+			addTab() {
+				that.clearClass();
+				let random = Math.random()
+				let li = '<li class="liactive"><span>新选项卡</span><span class="iconfont icon-guanbi">X</span></li>'
+				let section = '<section class="conactive">测试 '+random+'</section>'
+				that.ul.insertAdjacentHTML('beforeend',li);
+				that.fsection.insertAdjacentHTML('beforeend',section)
+			  that.init();
+			}
+			//3.删除功能
+			removeTab(e) {
+				e.stopPropagation();//阻止冒泡，防止触发li的切换事件
+				let index = this.parentNode.index;
+				//根据索引号删除对应的li 和 section
+				that.lis[index].remove();
+				that.sections[index].remove();
+				that.init();
+				//当我们删除的不是选中状态的li的时候，原来的选中状态li保持不变
+				if (document.querySelector('.liactive')) return;
+				//删除选中的状态li,让前一个li成选中状态
+				index--;
+				that.lis[index] && that.lis[index].click();
+			}
+			//4.编辑功能
+			editTab() {
+				let str = this.innerHTML;
+				//双击禁止选定文字
+				window.getSelection ? window.getSelection().removeAllRanges() : document.selection.empty();
+				//双击添加文本框
+				this.innerHTML = '<input type="text"/>';
+				let input = this.children[0];
+				input.value = str;
+				input.select();//文本框里面的文字处于选定状态
+				//离开文本框就把文本框的值给到span
+				input.onblur = function() {
+					this.parentNode.innerHTML = this.value;
+				}
+				//按下回车也可以把文本框里面的值给span
+				input.onkeyup = function(e) {
+					if(e.keyCode === 13){
+						this.blur();
+					}
+				}
+			}
+		}
+		
+		new Tab('#tab');
+	</script>
+</main>
+</body>
+</html>
